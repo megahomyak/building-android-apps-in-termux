@@ -1,0 +1,52 @@
+#!/bin/bash
+set -euxo pipefail
+cat << EOF >> .gitignore
+/classes.dex
+/app.apk
+/app.apk.idsig
+/app-unsigned.apk
+/obj/
+EOF
+cat << EOF > AndroidManifest.xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.hello">
+    <application android:label="Hello">
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
+EOF
+mkdir -p src/com/example/hello
+cat << EOF > src/com/example/hello/MainActivity.java
+package com.example.hello;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.widget.TextView;
+
+public class MainActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        TextView tv = new TextView(this);
+        tv.setText("Hello, world!");
+        setContentView(tv);
+    }
+}
+EOF
+cat << EOF > build
+#!/bin/bash
+set -euxo pipefail
+mkdir -p obj res
+javac --release 11 -classpath ~/android.jar -d obj src/com/example/hello/MainActivity.java
+d8 --classpath ~/android.jar obj/com/example/hello/*.class --output .
+aapt2 link -o app-unsigned.apk -I ~/android.jar --manifest AndroidManifest.xml --min-sdk-version 21 --target-sdk-version 34 -A res
+zip -j app-unsigned.apk classes.dex
+apksigner sign --ks ~/androiddebug.keystore --ks-pass pass:android --key-pass pass:android --out app.apk app-unsigned.apk
+EOF
+chmod +x build

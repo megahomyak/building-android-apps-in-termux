@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euxo pipefail
+pkg update
+pkg install -y openjdk-17 aapt aapt2 apksigner d8 wget
+if [ ! -f ~/androiddebug.keystore ]; then
+    keytool -genkeypair -v -keystore ~/androiddebug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+fi
+if [ ! -f ~/android.jar ]; then
+    wget https://github.com/Sable/android-platforms/raw/master/android-34/android.jar -O ~/android.jar # Not the best source, I know
+fi
