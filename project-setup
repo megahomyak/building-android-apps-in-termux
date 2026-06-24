@@ -43,6 +43,7 @@ EOF
 cat << EOF > build
 #!/bin/bash
 set -euxo pipefail
+trap 'rm -rf obj classes.dex app-unsigned.apk app.apk.idsig' EXIT
 mkdir -p obj res
 javac --release 11 -classpath ~/android.jar -d obj src/com/example/hello/MainActivity.java
 d8 --classpath ~/android.jar obj/com/example/hello/*.class --output .
