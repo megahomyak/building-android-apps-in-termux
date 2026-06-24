@@ -11,6 +11,7 @@ cat << EOF > AndroidManifest.xml
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.hello">
+    <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="34" />
     <application android:label="Hello">
         <activity android:name=".MainActivity" android:exported="true">
             <intent-filter>
@@ -45,7 +46,7 @@ set -euxo pipefail
 mkdir -p obj res
 javac --release 11 -classpath ~/android.jar -d obj src/com/example/hello/MainActivity.java
 d8 --classpath ~/android.jar obj/com/example/hello/*.class --output .
-aapt2 link -o app-unsigned.apk -I ~/android.jar --manifest AndroidManifest.xml --min-sdk-version 21 --target-sdk-version 34 -A res
+aapt2 link -o app-unsigned.apk -I ~/android.jar --manifest AndroidManifest.xml -A res
 zip -j app-unsigned.apk classes.dex
 apksigner sign --ks ~/androiddebug.keystore --ks-pass pass:android --key-pass pass:android --out app.apk app-unsigned.apk
 EOF
